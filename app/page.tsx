@@ -1,65 +1,83 @@
-import Image from "next/image";
+import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="landing-bg min-h-screen">
+      <div className="mx-auto max-w-5xl px-5 sm:px-8">
+        <SiteHeader signedIn={!!user} />
+
+        <main className="pb-24 pt-10 sm:pt-20">
+          <section className="mx-auto max-w-3xl text-center">
+            <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-[var(--accent)]">
+              Free portfolio builder
+            </p>
+            <h1 className="font-display text-4xl leading-[1.1] tracking-tight text-[var(--ink)] sm:text-6xl">
+              Build once.
+              <br />
+              Share your link everywhere.
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-[var(--muted)] sm:text-lg">
+              Enter your details, optionally attach a CV, and get a public
+              portfolio link on this domain — like{" "}
+              <span className="whitespace-nowrap font-medium text-[var(--ink)]">
+                /yourname
+              </span>
+              . Edit or delete anytime. No subscriptions.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={user ? "/dashboard" : "/signup"}
+                className="rounded-lg bg-[var(--ink)] px-6 py-3.5 text-sm font-medium text-white transition hover:bg-[var(--ink-soft)]"
+              >
+                {user ? "Go to dashboard" : "Create your portfolio free"}
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg border border-[var(--line)] bg-white/80 px-6 py-3.5 text-sm font-medium text-[var(--ink)] backdrop-blur transition hover:border-[var(--accent)]"
+              >
+                Sign in
+              </Link>
+            </div>
+          </section>
+
+          <section className="mx-auto mt-24 grid max-w-4xl gap-8 sm:grid-cols-3">
+            {[
+              {
+                title: "Fill your story",
+                body: "Name, skills, projects, experience, education, and an optional CV.",
+              },
+              {
+                title: "Get your link",
+                body: "Publish and share yourdomain.com/username with recruiters.",
+              },
+              {
+                title: "Edit or delete",
+                body: "Update anytime from your dashboard. Delete when you are done.",
+              },
+            ].map((item) => (
+              <div key={item.title} className="space-y-2 text-left">
+                <h2 className="font-display text-xl text-[var(--ink)]">
+                  {item.title}
+                </h2>
+                <p className="text-sm leading-relaxed text-[var(--muted)]">
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </section>
+        </main>
+
+        <footer className="border-t border-[var(--line)] py-8 text-center text-xs text-[var(--muted)]">
+          FolioLink · Free forever · No premium plans
+        </footer>
+      </div>
     </div>
   );
 }
