@@ -2,12 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
 
 export function AuthForm({ mode }: { mode: Mode }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,39 +20,121 @@ export function AuthForm({ mode }: { mode: Mode }) {
     return process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
   }
 
-  async function sendMagicLink(e: React.FormEvent) {
+  async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
 
     const supabase = createClient();
-    const appUrl = getAppUrl();
-    const { error: err } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${appUrl}/auth/callback?next=/dashboard`,
-        shouldCreateUser: mode === "signup" || mode === "login",
-      },
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (password.length < 6) {
+      setLoading(false);
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (mode === "signup") {
+      if (password !== confirmPassword) {
+        setLoading(false);
+        setError("Passwords do not match.");
+        return;
+      }
+
+      const { data, error: err } = await supabase.auth.signUp({
+        email: trimmedEmail,
+        password,
+        options: {
+          emailRedirectTo: `${getAppUrl()}/auth/callback?next=/dashboard`,
+        },
+      });
+
+      setLoading(false);
+
+      if (err) {
+        const msg = err.message.toLowerCase();
+        if (
+          msg.includes("already") ||
+          msg.includes("registered") ||
+          msg.includes("exists")
+        ) {
+          setError("This email is already registered. Please sign in instead.");
+        } else {
+          setError(err.message);
+        }
+        return;
+      }
+
+      // If email confirmation is off, session is returned immediately
+      if (data.session) {
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      // Email confirmation required
+      setMessage(
+        "Account created. Check your email to confirm, then sign in. (Or disable email confirmation in Supabase for instant login.)",
+      );
+      return;
+    }
+
+    // Login
+    const { error: err } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
     });
 
+    setLoading(false);
+
+    if (err) {
+      const msg = err.message.toLowerCase();
+      if (msg.includes("invalid login") || msg.includes("invalid credentials")) {
+        setError(
+          "Wrong email or password. If you are new, create an account. If you signed up with Google, use Continue with Google.",
+        );
+      } else if (msg.includes("email not confirmed")) {
+        setError("Please confirm your email first, then try signing in again.");
+      } else {
+        setError(err.message);
+      }
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setError("Enter your email above first, then click Forgot password.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: `${getAppUrl()}/auth/callback?next=/dashboard` },
+    );
     setLoading(false);
     if (err) {
       setError(err.message);
       return;
     }
-    setMessage("Check your email for the magic link to continue.");
+    setMessage("Password reset link sent. Check your email.");
   }
 
   async function signInWithGoogle() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const appUrl = getAppUrl();
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${appUrl}/auth/callback?next=/dashboard`,
+        redirectTo: `${getAppUrl()}/auth/callback?next=/dashboard`,
       },
     });
     if (err) {
@@ -65,8 +151,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
         </h1>
         <p className="text-sm text-[var(--muted)]">
           {mode === "login"
-            ? "Sign in to edit or share your portfolio."
-            : "Free forever. Publish your portfolio in minutes."}
+            ? "Sign in with your email if you already registered."
+            : "New here? Create an account to publish your portfolio."}
         </p>
       </div>
 
@@ -82,11 +168,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
       <div className="flex items-center gap-3 text-xs text-[var(--muted)]">
         <span className="h-px flex-1 bg-[var(--line)]" />
-        or email magic link
+        or email
         <span className="h-px flex-1 bg-[var(--line)]" />
       </div>
 
-      <form onSubmit={sendMagicLink} className="space-y-4">
+      <form onSubmit={handleEmailAuth} className="space-y-4">
         <label className="block space-y-1.5">
           <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
             Email
@@ -97,16 +183,65 @@ export function AuthForm({ mode }: { mode: Mode }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+            autoComplete="email"
             className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
           />
         </label>
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+            Password
+          </span>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="At least 6 characters"
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
+          />
+        </label>
+
+        {mode === "signup" && (
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+              Confirm password
+            </span>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Repeat password"
+              autoComplete="new-password"
+              className="w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2.5 text-sm outline-none ring-[var(--accent)] focus:ring-2"
+            />
+          </label>
+        )}
+
         <button
           type="submit"
           disabled={loading}
           className="w-full rounded-lg bg-[var(--ink)] px-4 py-3 text-sm font-medium text-white transition hover:bg-[var(--ink-soft)] disabled:opacity-60"
         >
-          {loading ? "Sending…" : "Send magic link"}
+          {loading
+            ? "Please wait…"
+            : mode === "login"
+              ? "Sign in"
+              : "Create account"}
         </button>
+
+        {mode === "login" && (
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={loading}
+            className="w-full text-center text-sm text-[var(--accent)] underline-offset-2 hover:underline disabled:opacity-60"
+          >
+            Forgot password?
+          </button>
+        )}
       </form>
 
       {message && (
@@ -122,14 +257,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
         {mode === "login" ? (
           <>
             New here?{" "}
-            <Link href="/signup" className="font-medium text-[var(--accent)] underline-offset-2 hover:underline">
+            <Link
+              href="/signup"
+              className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+            >
               Create an account
             </Link>
           </>
         ) : (
           <>
             Already have an account?{" "}
-            <Link href="/login" className="font-medium text-[var(--accent)] underline-offset-2 hover:underline">
+            <Link
+              href="/login"
+              className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+            >
               Sign in
             </Link>
           </>
