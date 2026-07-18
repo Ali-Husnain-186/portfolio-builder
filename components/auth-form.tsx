@@ -12,13 +12,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const supabase = createClient();
-
   function getAppUrl() {
-    return (
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "")
-    );
+    return process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
   }
 
   async function sendMagicLink(e: React.FormEvent) {
@@ -27,6 +22,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setError(null);
     setMessage(null);
 
+    const supabase = createClient();
     const appUrl = getAppUrl();
     const { error: err } = await supabase.auth.signInWithOtp({
       email,
@@ -47,6 +43,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   async function signInWithGoogle() {
     setLoading(true);
     setError(null);
+    const supabase = createClient();
     const appUrl = getAppUrl();
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: "google",

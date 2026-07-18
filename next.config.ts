@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // Allow avatar (2MB) + CV (5MB) + form fields
+      bodySizeLimit: "8mb",
+    },
+  },
 };
 
 export default nextConfig;
