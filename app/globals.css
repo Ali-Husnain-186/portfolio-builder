@@ -72,11 +72,11 @@ body {
 .fl-type-caret { margin-left: 1px; font-weight: 300; color: var(--p); }
 
 /* scroll reveal — hidden state only applies once JS has tagged the element */
-.fl-js [data-rv] {
-  opacity: 0;
+.fl-js [data-rv] { opacity: 0; will-change: opacity, transform; }
+/* transition only on the way in, so hiding is instant (no fade-out flicker on load) */
+.fl-js [data-rv].fl-in {
   transition: opacity var(--rv-d) ease, transform var(--rv-d) cubic-bezier(.2,.7,.2,1), filter var(--rv-d) ease;
   transition-delay: calc(var(--i, 0) * var(--rv-stagger));
-  will-change: opacity, transform;
 }
 .fl-js.fl-a-slide-up [data-rv] { transform: translateY(42px); }
 .fl-js.fl-a-slide-side [data-rv="0"] { transform: translateX(-56px); }

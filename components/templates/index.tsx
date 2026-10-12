@@ -28,7 +28,7 @@ const MAP: Record<TemplateId, (props: { p: Portfolio; preview?: boolean }) => Re
 export default function PortfolioRenderer({ p, preview, still }: { p: Portfolio; preview?: boolean; still?: boolean }) {
   const T = MAP[p.design.template] ?? Modern;
   const d = withAnimDefaults(p.design);
-  const animated = !still && d.animation !== "none";
+  const animated = !still && d.animation !== "none" && (typeof window === "undefined" || "IntersectionObserver" in window);
   const root = useRef<HTMLDivElement>(null);
   const replay = useReplay();
   useReveal(root, animated, replay);
