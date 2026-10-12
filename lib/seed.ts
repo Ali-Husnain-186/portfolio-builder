@@ -11,7 +11,10 @@ let seeding: Promise<void> | null = null;
 
 export function ensureSeeded() {
   if (process.env.SEED_DEMO === "false") return Promise.resolve();
-  if (!seeding) seeding = run().catch((e) => { seeding = null; console.error("seed failed", e); });
+  if (!seeding) {
+    const timeout = new Promise<void>((_, rej) => setTimeout(() => rej(new Error("seed timed out")), 10000));
+    seeding = Promise.race([run(), timeout]).catch((e) => { seeding = null; console.error("seed failed", e); });
+  }
   return seeding;
 }
 

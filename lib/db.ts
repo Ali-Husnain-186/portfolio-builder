@@ -136,7 +136,7 @@ function postgresDriver(): KV {
   };
 }
 
-function pickDriver(): KV {
+function resolveDriverName() {
   const explicit = process.env.DB_DRIVER;
   const driver =
     explicit ||
@@ -145,6 +145,13 @@ function pickDriver(): KV {
       : process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT || process.env.SITE_ID
         ? "blobs"
         : "file");
+  return driver;
+}
+
+export const driverName = resolveDriverName();
+
+function pickDriver(): KV {
+  const driver = driverName;
   if (driver === "postgres") return postgresDriver();
   if (driver === "blobs") return blobsDriver();
   return fileDriver();
