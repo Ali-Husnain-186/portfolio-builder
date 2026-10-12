@@ -1,68 +1,75 @@
 # FolioLink — Free Portfolio Builder
 
-Multi-user portfolio product: users sign up, fill their details (optional CV), get a public link at `yourdomain.com/username`, and can edit or delete anytime. No subscriptions.
+A complete, multi-user portfolio builder. People sign up, pick a template, customize everything with a live preview, and share a link like `yourdomain.com/username`.
 
-## Stack
+## Features
 
-- Next.js (App Router) + TypeScript + Tailwind CSS
-- Supabase (Auth, Postgres, Storage)
+- **Accounts:** email + password sign-up and login (scrypt hashing, httpOnly session cookies), change email/password, delete account
+- **6 templates:** Modern, Minimal, Developer, Creative, Classic, Glass. Switching templates keeps all content.
+- **Design controls:** 8 color presets plus custom primary/accent/background colors, light/dark mode, 8 fonts (heading and body), corner radius, animations
+- **Editor with live preview:** desktop, tablet and mobile preview, autosave, Ctrl/Cmd+S
+- **Content:** profile, photo, CV (PDF), skills with levels, projects with images, experience, education, services, testimonials, 8 social links
+- **Sections:** reorder and show/hide
+- **Public page `/username`:** SEO and Open Graph metadata, contact form (with honeypot and rate limits), view counter
+- **Dashboard:** share link, publish/unpublish, profile strength, inbox for contact messages
+- **Link & data:** change username (checks availability and suggests alternatives), export/import JSON, reset
+- **Admin panel (`/admin`):** list, search, publish/unpublish, disable/enable, promote or delete users
+- **Demo data:** 3 demo portfolios (`/ayesha`, `/bilal`, `/sara`) are seeded on first run
 
-## Setup
+## Storage — swappable, zero config
 
-### 1. Install
+All data goes through a small key/value interface in [`lib/db.ts`](lib/db.ts):
+
+| Driver | When it's used | Setup |
+|---|---|---|
+| **Netlify Blobs** | Default on Netlify | none |
+| **Postgres** (Supabase, Neon, RDS, …) | When `DATABASE_URL` is set | set `DATABASE_URL`; the table is created automatically |
+| **File** (`.data/kv.json`) | Default for local dev | none |
+
+To force a driver, set `DB_DRIVER=blobs|postgres|file`. To move to another database later, set one env var or add one more driver to `lib/db.ts`. Nothing else in the app changes.
+
+## Environment variables (all optional)
+
+| Var | Purpose |
+|---|---|
+| `ADMIN_EMAILS` | Comma-separated emails that get the Admin panel |
+| `DATABASE_URL` | Use Postgres instead of Netlify Blobs |
+| `DB_DRIVER` | Force a storage driver |
+| `NEXT_PUBLIC_APP_URL` | Base URL shown in share links (defaults to the current domain) |
+| `SEED_DEMO` | `false` to skip seeding demo portfolios |
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local
+npm run dev     # http://localhost:3000
 ```
 
-Fill `.env.local`:
+Demo logins (seeded): `ayesha@demo.foliolink.app`, `bilal@demo.foliolink.app`, `sara@demo.foliolink.app`. The password is `demo12345`. It is public, so disable seeding (`SEED_DEMO=false`) or delete these accounts from `/admin` before you launch.
 
-```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+## Deploy to Netlify
 
-### 2. Supabase
+1. Netlify → **Add new site → Import an existing project → GitHub** → pick this repo.
+2. The build settings come from `netlify.toml`, so you don't need to change anything. Click **Deploy**.
+3. (Optional) Site configuration → Environment variables → add `ADMIN_EMAILS=you@example.com`, then redeploy.
+4. (Optional) Domain management → add your custom domain.
 
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Run the SQL in [`supabase/migrations/001_portfolios.sql`](supabase/migrations/001_portfolios.sql) in the SQL Editor
-3. Auth → URL configuration:
-   - Site URL: your domain (or `http://localhost:3000`)
-   - Redirect URLs: `http://localhost:3000/auth/callback` and `https://yourdomain.com/auth/callback`
-4. (Optional) Auth → Providers → enable Google and add OAuth client IDs
+Every push to `main` redeploys automatically.
 
-### 3. Run locally
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-## Product routes
+## Routes
 
 | Route | Purpose |
-|-------|---------|
-| `/` | Landing |
-| `/signup`, `/login` | Auth (magic link + Google) |
-| `/dashboard` | Copy link, edit, delete |
-| `/dashboard/edit` | Create / update portfolio + optional CV |
-| `/{username}` | Public portfolio (GradeNova-style path) |
+|---|---|
+| `/` | Landing page |
+| `/templates`, `/templates/:id` | Template gallery and interactive preview |
+| `/signup`, `/login` | Auth |
+| `/dashboard` | Overview, share link, stats |
+| `/dashboard/editor` | Builder with live preview |
+| `/dashboard/inbox` | Contact-form messages |
+| `/dashboard/settings` | Account settings |
+| `/admin` | Admin panel |
+| `/:username` | Public portfolio |
 
-If a username is taken, the form suggests `ali1`, `ali2`, etc.
+## Stack
 
-## Deploy (GitHub → Vercel → your domain)
-
-1. Push this repo to GitHub (under [Ali-Husnain-186](https://github.com/Ali-Husnain-186))
-2. Import the repo in [Vercel](https://vercel.com) (Import Git Repository)
-3. Add the same env vars as `.env.local`, with `NEXT_PUBLIC_APP_URL=https://yourdomain.com`
-4. Deploy, then add your **custom domain** in Vercel → Domains
-5. Point DNS (A/CNAME) as Vercel shows
-
-Every push to `main` auto-deploys. User portfolio links are always on **your domain** (`yourdomain.com/username`), not on `*.vercel.app`.
-
-## License
-
-Private / your product.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Netlify Blobs / Postgres

@@ -1,17 +1,23 @@
-import { AuthForm } from "@/components/auth-form";
-import { SiteHeader } from "@/components/site-header";
+import { redirect } from "next/navigation";
+import { AuthForm } from "@/components/ui/auth-form";
+import { Logo } from "@/components/ui/logo";
+import { getCurrentUser } from "@/lib/auth";
 
-export const metadata = { title: "Sign in" };
+export const metadata = { title: "Log in" };
 
-export default function LoginPage() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ template?: string }> }) {
+  if (await getCurrentUser()) redirect("/dashboard");
+  const { template } = await searchParams;
   return (
-    <div className="landing-bg min-h-screen">
-      <div className="mx-auto max-w-5xl px-5 sm:px-8">
-        <SiteHeader />
-        <main className="flex justify-center py-16">
-          <AuthForm mode="login" />
-        </main>
+    <main className="flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex justify-center"><Logo /></div>
+        <div className="card p-8 shadow-sm">
+          <h1 className="font-display text-2xl font-bold">Welcome back</h1>
+          <p className="mb-6 mt-1 text-sm text-ui-muted">Log in to edit your portfolio.</p>
+          <AuthForm mode="login" template={template} />
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

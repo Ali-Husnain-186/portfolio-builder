@@ -1,44 +1,58 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f0ea;
-  --foreground: #1a2332;
-  --ink: #1a2332;
-  --ink-soft: #2c3a4f;
-  --muted: #5c6b7a;
-  --line: #d8d2c8;
-  --surface: #ebe6dc;
-  --accent: #0d7377;
-  --accent-soft: #d4eeef;
+  --ui-bg: #f6f5f2;
+  --ui-fg: #14161c;
+  --ui-muted: #646b7a;
+  --ui-line: #e3e0d9;
+  --ui-card: #ffffff;
+  --ui-brand: #5b21b6;
+  --ui-brand2: #db2777;
+  --ui-soft: #f1ecfb;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
-  --font-display: var(--font-display);
+  --color-ui-bg: var(--ui-bg);
+  --color-ui-fg: var(--ui-fg);
+  --color-ui-muted: var(--ui-muted);
+  --color-ui-line: var(--ui-line);
+  --color-ui-card: var(--ui-card);
+  --color-brand: var(--ui-brand);
+  --color-brand2: var(--ui-brand2);
+  --color-ui-soft: var(--ui-soft);
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
 }
 
+html { scroll-behavior: smooth; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-family: "Inter", system-ui, sans-serif;
+}
+.font-display { font-family: "Fraunces", Georgia, serif; }
+.brand-gradient { background: linear-gradient(120deg, var(--ui-brand), var(--ui-brand2)); }
+.brand-text { background: linear-gradient(120deg, var(--ui-brand), var(--ui-brand2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+@layer components {
+/* form controls in app UI */
+.field { @apply w-full rounded-lg border border-ui-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15; }
+.label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-ui-muted; }
+.btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 cursor-pointer text-white shadow-sm hover:opacity-90; background: linear-gradient(120deg, var(--ui-brand), var(--ui-brand2)); }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 cursor-pointer border border-ui-line bg-white hover:bg-ui-bg; }
+.btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 cursor-pointer bg-red-600 text-white hover:bg-red-700; }
+.card { @apply rounded-2xl border border-ui-line bg-white; }
 }
 
-.font-display {
-  font-family: var(--font-display), Georgia, serif;
-}
-
-.portfolio-bg {
-  background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, #c8e8e9 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 100% 0%, #e8dfd0 0%, transparent 50%),
-    var(--background);
-}
-
-.landing-bg {
-  background:
-    linear-gradient(165deg, #e8f4f4 0%, transparent 45%),
-    linear-gradient(345deg, #efe8dc 0%, transparent 40%),
-    var(--background);
+/* portfolio animations */
+@keyframes flUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes flGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes flMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes flBlink { 50% { opacity: 0; } }
+.fl-anim .fl-reveal { animation: flUp .8s cubic-bezier(.2,.7,.2,1) both; }
+.fl-anim .fl-grow { transform-origin: left; animation: flGrow 1.2s cubic-bezier(.2,.7,.2,1) both; }
+.fl-marquee { animation: flMarquee 30s linear infinite; }
+.fl-caret { animation: flBlink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fl-anim .fl-reveal, .fl-anim .fl-grow, .fl-marquee, .fl-caret { animation: none; }
 }
