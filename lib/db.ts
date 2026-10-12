@@ -74,6 +74,10 @@ function blobsDriver(): KV {
   return {
     async get(key) {
       const s = await store();
+      // Reading a key that doesn't exist can stall inside @netlify/blobs (it retries
+      // the 403 the edge returns for missing keys), so check existence via list first.
+      const { blobs } = await s.list({ prefix: key });
+      if (!blobs.some((b) => b.key === key)) return null;
       return ((await s.get(key, { type: "json" })) ?? null) as never;
     },
     async set(key, value) {
