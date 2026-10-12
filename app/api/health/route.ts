@@ -16,7 +16,15 @@ export async function GET() {
     out.set = `ok ${Date.now() - t0}ms`;
     const t1 = Date.now();
     out.get = (await withTimeout(kv.get("meta/health"), 8000)) ? `ok ${Date.now() - t1}ms` : "null";
-    out.seeded = !!(await withTimeout(kv.get("meta/seeded"), 8000));
+    const probe = async (name: string, fn: () => Promise<unknown>) => {
+      const t = Date.now();
+      try { const v = await withTimeout(fn(), 6000); out[name] = `ok ${Date.now() - t}ms ${JSON.stringify(v)?.slice(0, 80)}`; }
+      catch (e) { out[name] = `ERR ${Date.now() - t}ms ${(e as Error).message}`; }
+    };
+    await probe("listMeta", () => kv.list("meta/"));
+    await probe("getMissing", () => kv.get("meta/missing-" + Date.now()));
+    await probe("getSeeded", () => kv.get("meta/seeded"));
+    await probe("listUsers", () => kv.list("users/"));
   } catch (e) {
     out.error = String((e as Error).message || e);
   }
