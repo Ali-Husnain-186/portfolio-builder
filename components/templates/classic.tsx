@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps, Typed } from "./shared";
 
 const SIDEBAR: SectionKey[] = ["skills", "education"];
 
@@ -37,8 +37,8 @@ export default function Classic({ p, preview }: TplProps) {
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)", color: "var(--fg)", fontFamily: "var(--font)" }}>
       <div className="mx-auto max-w-6xl px-4 py-10 md:py-16">
-        <div className="fl-reveal grid overflow-hidden shadow-xl md:grid-cols-[300px_1fr]" style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--r)" }}>
-          <aside className="p-8 text-white" style={{ background: "var(--p)" }}>
+        <div className="grid overflow-hidden shadow-xl md:grid-cols-[300px_1fr]" style={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: "var(--r)" }}>
+          <aside className="fl-reveal p-8 text-white" style={{ background: "var(--p)" }}>
             <Avatar p={p} size={140} round className="mx-auto ring-4 ring-white/30" />
             <h1 className="mt-5 text-center text-3xl font-bold leading-tight" style={H}>{pr.fullName}</h1>
             <p className="mt-1 text-center text-white/80">{pr.title}</p>
@@ -57,7 +57,7 @@ export default function Classic({ p, preview }: TplProps) {
             ))}
           </aside>
           <main className="space-y-12 p-8 md:p-12">
-            {pr.tagline && <p className="text-2xl italic leading-snug" style={{ ...H, color: "var(--a)" }}>{pr.tagline}</p>}
+            {pr.tagline && <p className="text-2xl italic leading-snug" style={{ ...H, color: "var(--a)" }}><Typed text={pr.tagline} /></p>}
             {secs.filter((k) => !SIDEBAR.includes(k)).map((k) => (
               <section key={k} id={k}><Title k={k} />{render(k)}</section>
             ))}

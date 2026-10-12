@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, SocialIcons, label, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, SocialIcons, label, visibleSections, type TplProps, Typed } from "./shared";
 
 export default function Minimal({ p, preview }: TplProps) {
   const pr = p.profile;
@@ -41,12 +41,12 @@ export default function Minimal({ p, preview }: TplProps) {
   };
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)", color: "var(--fg)", fontFamily: "var(--font)" }}>
-      <main className="fl-reveal mx-auto max-w-2xl px-6 py-20 md:py-28">
-        <header>
+      <main className="mx-auto max-w-2xl px-6 py-20 md:py-28">
+        <header className="fl-reveal">
           <Avatar p={p} size={72} round />
           <h1 className="mt-6 text-3xl font-bold tracking-tight" style={{ fontFamily: "var(--hfont)" }}>{pr.fullName}</h1>
           <p className="mt-1" style={muted}>{[pr.title, pr.location].filter(Boolean).join(" — ")}</p>
-          {pr.tagline && <p className="mt-6 text-xl leading-snug">{pr.tagline}</p>}
+          {pr.tagline && <p className="mt-6 text-xl leading-snug"><Typed text={pr.tagline} /></p>}
           <div className="mt-6 flex flex-wrap items-center gap-5 text-sm">
             <SocialIcons socials={p.socials} size={18} />
             {pr.resumeUrl && <a href={pr.resumeUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--a)" }}>Résumé ↗</a>}

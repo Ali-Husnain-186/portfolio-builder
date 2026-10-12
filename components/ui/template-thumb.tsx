@@ -18,7 +18,7 @@ export function TemplateThumb({ p, height = 260 }: { p: Portfolio; height?: numb
   return (
     <div ref={ref} className="pointer-events-none relative w-full overflow-hidden select-none" style={{ height }} aria-hidden inert>
       <div style={{ width: 1280, transform: `scale(${scale})`, transformOrigin: "top left" }}>
-        <PortfolioRenderer p={{ ...p, design: { ...p.design, animations: false } }} preview />
+        <PortfolioRenderer p={p} preview still />
       </div>
     </div>
   );

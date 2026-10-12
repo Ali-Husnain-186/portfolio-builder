@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, Nav, ProjectImage, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, Nav, ProjectImage, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps, Typed } from "./shared";
 
 export default function Glass({ p, preview }: TplProps) {
   const pr = p.profile;
@@ -55,7 +55,7 @@ export default function Glass({ p, preview }: TplProps) {
           <div className="inline-block rounded-full p-1" style={{ background: "linear-gradient(135deg,var(--p),var(--a))", boxShadow: "0 0 60px color-mix(in srgb,var(--p) 60%,transparent)" }}><Avatar p={p} size={130} round /></div>
           <h1 className="mt-8 text-5xl font-bold tracking-tight md:text-7xl" style={H}>{pr.fullName}</h1>
           <p className="mt-4 text-xl" style={{ background: "linear-gradient(90deg,var(--p),var(--a))", WebkitBackgroundClip: "text", color: "transparent" }}>{pr.title}</p>
-          {pr.tagline && <p className="mx-auto mt-5 max-w-2xl text-lg" style={muted}>{pr.tagline}</p>}
+          {pr.tagline && <p className="mx-auto mt-5 max-w-2xl text-lg" style={muted}><Typed text={pr.tagline} /></p>}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#contact" className="px-6 py-3 font-semibold text-white" style={{ background: "linear-gradient(90deg,var(--p),var(--a))", borderRadius: 99 }}>Contact me</a>
             {pr.resumeUrl && <a href={pr.resumeUrl} target="_blank" rel="noopener noreferrer" className="px-6 py-3 font-semibold" style={{ ...glass, borderRadius: 99 }}>Résumé</a>}

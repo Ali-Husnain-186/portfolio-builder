@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { COLOR_PRESETS, FONTS, TEMPLATES } from "@/lib/design";
+import { ANIM_SPEEDS, ANIMATIONS, COLOR_PRESETS, FONTS, TEMPLATES, templateAnimDefaults, withAnimDefaults } from "@/lib/design";
 import { DEMO_PEOPLE, demoPortfolio } from "@/lib/demo";
 import type { Design, FontId, Portfolio, SectionKey } from "@/lib/types";
 import { SECTION_LABELS } from "@/lib/types";
 import { TemplateThumb } from "@/components/ui/template-thumb";
 import { Area, Field, ListEditor, Section, Text, Upload } from "./fields";
 
-type Tab = "profile" | "design" | "sections" | "skills" | "projects" | "experience" | "education" | "services" | "testimonials" | "socials" | "settings";
+type Tab = "profile" | "design" | "animation" | "sections" | "skills" | "projects" | "experience" | "education" | "services" | "testimonials" | "socials" | "settings";
 const TABS: { id: Tab; label: string; icon: string; section?: SectionKey }[] = [
   { id: "profile", label: "Profile", icon: "👤", section: "about" },
   { id: "design", label: "Design", icon: "🎨" },
+  { id: "animation", label: "Animation", icon: "🎬" },
   { id: "sections", label: "Sections", icon: "🧩" },
   { id: "skills", label: "Skills", icon: "⚡", section: "skills" },
   { id: "projects", label: "Projects", icon: "📁", section: "projects" },
@@ -38,6 +39,10 @@ export function Editor({ initial, initialTab, welcome }: { initial: Portfolio; i
   const latest = useRef(p);
   useEffect(() => { latest.current = p; }, [p]);
   const [savedUsername, setSavedUsername] = useState(initial.username);
+
+  const replayPreview = useCallback(() => {
+    frame.current?.contentWindow?.postMessage({ type: "fl-replay" }, window.location.origin);
+  }, []);
 
   const push = useCallback(() => {
     frame.current?.contentWindow?.postMessage({ type: "fl-preview", portfolio: latest.current }, window.location.origin);
@@ -194,10 +199,12 @@ export function Editor({ initial, initialTab, welcome }: { initial: Portfolio; i
                     ))}
                   </div>
                 </Field>
-                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={p.design.animations} onChange={(e) => des({ animations: e.target.checked })} /> Entrance animations</label>
+                <button type="button" className="text-sm font-semibold text-brand hover:underline" onClick={() => goTab("animation")}>🎬 Animation &amp; effects settings →</button>
               </Section>
             </div>
           )}
+
+          {tab === "animation" && <AnimationPanel design={p.design} des={des} replay={replayPreview} />}
 
           {tab === "sections" && (
             <Section title="Sections" desc="Reorder and show/hide sections. Empty sections are hidden automatically.">
@@ -385,4 +392,57 @@ function SettingsTab({ p, update, save, savedUsername, status }: { p: Portfolio;
       </Section>
     </div>
   );
+}
+
+function AnimationPanel({ design, des, replay }: { design: Design; des: (patch: Partial<Design>) => void; replay: () => void }) {
+  const ad = withAnimDefaults(design);
+  const tplName = TEMPLATES.find((t) => t.id === design.template)?.name;
+  const setA = (patch: Partial<Design>) => { des({ ...ad, ...patch, animations: (patch.animation ?? ad.animation) !== "none" }); setTimeout(replay, 120); };
+  return (
+    <div className="space-y-8">
+      <Section title="Scroll animation" desc="How sections and cards appear as visitors scroll." action={<button type="button" className="btn-ghost shrink-0 whitespace-nowrap !py-1 text-xs" onClick={replay} data-testid="replay">▶ Replay</button>}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {ANIMATIONS.map((a) => (
+            <button key={a.id} type="button" data-anim={a.id} aria-pressed={ad.animation === a.id} onClick={() => setA({ animation: a.id })}
+              className={`group rounded-xl border-2 bg-white p-3 text-left transition ${ad.animation === a.id ? "border-brand bg-ui-soft" : "border-ui-line hover:border-brand/40"}`}>
+              <span className={`fl-demo fl-demo-${a.id} mb-2 block h-8 rounded-md`} />
+              <span className="block text-sm font-semibold">{a.label}</span>
+              <span className="block text-[11px] text-ui-muted">{a.hint}</span>
+            </button>
+          ))}
+        </div>
+      </Section>
+      <Section title="Speed">
+        <div className="flex gap-2">
+          {(Object.keys(ANIM_SPEEDS) as Design["animSpeed"][]).map((sp) => (
+            <button key={sp} type="button" data-speed={sp} disabled={ad.animation === "none"} onClick={() => setA({ animSpeed: sp })}
+              className={`flex-1 rounded-lg border-2 py-2 text-sm font-medium disabled:opacity-40 ${ad.animSpeed === sp ? "border-brand bg-ui-soft" : "border-ui-line bg-white"}`}>{ANIM_SPEEDS[sp].label}</button>
+          ))}
+        </div>
+      </Section>
+      <Section title="Effects" desc="Turn extra effects on or off.">
+        <div className="space-y-2">
+          <AnimToggle ad={ad} setA={setA} k="typing" label="Typing tagline" hint="Your tagline types itself out like a typewriter." />
+          <AnimToggle ad={ad} setA={setA} k="bgFx" label="Animated background" hint="Soft colour glows that slowly float behind the page." />
+          <AnimToggle ad={ad} setA={setA} k="hoverEffects" label="Hover effects" hint="Cards and buttons lift when the mouse moves over them." />
+          <AnimToggle ad={ad} setA={setA} k="progressBar" label="Scroll progress bar" hint="A thin bar at the top that fills as visitors scroll." />
+          <AnimToggle ad={ad} setA={setA} k="backToTop" label="Back-to-top button" hint="A floating button to jump back to the top." />
+        </div>
+      </Section>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="btn-ghost" data-testid="anim-reset" onClick={() => setA(templateAnimDefaults(design.template))}>↺ Use {tplName} template defaults</button>
+        <button type="button" className="btn-ghost text-red-600" data-testid="anim-off" onClick={() => setA({ animation: "none", typing: false, bgFx: false, progressBar: false, backToTop: false, hoverEffects: false })}>✕ Remove all animation</button>
+      </div>
+      <p className="text-xs text-ui-muted">Visitors who set &quot;reduce motion&quot; on their device automatically see a still version.</p>
+    </div>
+  );
+}
+
+function AnimToggle({ ad, setA, k, label, hint }: { ad: Design; setA: (p: Partial<Design>) => void; k: "hoverEffects" | "typing" | "bgFx" | "progressBar" | "backToTop"; label: string; hint: string }) {
+  return (
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-ui-line bg-white p-3">
+                <input type="checkbox" className="mt-1" data-anim-toggle={k} checked={!!ad[k]} onChange={(e) => setA({ [k]: e.target.checked })} />
+                <span><span className="block text-sm font-semibold">{label}</span><span className="block text-xs text-ui-muted">{hint}</span></span>
+              </label>
+            );
 }

@@ -1,4 +1,4 @@
-import { DEFAULT_SECTIONS, FONTS, RADIUS, TEMPLATES, uid } from "./design";
+import { ANIM_SPEEDS, ANIMATIONS, DEFAULT_SECTIONS, FONTS, RADIUS, TEMPLATES, templateAnimDefaults, uid } from "./design";
 import type { Design, Portfolio, SectionKey } from "./types";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -41,7 +41,24 @@ export function sanitizePortfolio(input: any, base: Portfolio): Portfolio {
     headingFont: d.headingFont in FONTS ? d.headingFont : base.design.headingFont,
     radius: d.radius in RADIUS ? d.radius : base.design.radius,
     animations: d.animations !== false,
+    animation: "none",
+    animSpeed: "normal",
+    hoverEffects: true,
+    typing: false,
+    bgFx: false,
+    progressBar: true,
+    backToTop: true,
   };
+  const ad = templateAnimDefaults(design.template);
+  const bool = (v: any, fb: boolean | undefined) => (typeof v === "boolean" ? v : fb ?? false);
+  design.animation = ANIMATIONS.some((a) => a.id === d.animation) ? d.animation : d.animations === false ? "none" : (ad.animation ?? "fade");
+  design.animSpeed = d.animSpeed in ANIM_SPEEDS ? d.animSpeed : (ad.animSpeed ?? "normal");
+  design.hoverEffects = bool(d.hoverEffects, ad.hoverEffects ?? true);
+  design.typing = bool(d.typing, ad.typing);
+  design.bgFx = bool(d.bgFx, ad.bgFx);
+  design.progressBar = bool(d.progressBar, ad.progressBar ?? true);
+  design.backToTop = bool(d.backToTop, ad.backToTop ?? true);
+  design.animations = design.animation !== "none";
 
   return {
     ...base,

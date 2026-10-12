@@ -1,4 +1,4 @@
-import type { Design, FontId, Portfolio, SectionKey, TemplateId } from "./types";
+import type { AnimationSpeed, AnimationStyle, Design, FontId, Portfolio, SectionKey, TemplateId } from "./types";
 
 export const TEMPLATES: {
   id: TemplateId;
@@ -10,37 +10,37 @@ export const TEMPLATES: {
     id: "modern",
     name: "Modern",
     description: "Bold gradient hero, card grid, perfect for most professionals.",
-    defaults: { mode: "light", primary: "#6d28d9", accent: "#ec4899", font: "inter", headingFont: "poppins", radius: "lg" },
+    defaults: { mode: "light", primary: "#6d28d9", accent: "#ec4899", font: "inter", headingFont: "poppins", radius: "lg", animations: true, animation: "slide-up", animSpeed: "normal", hoverEffects: true, typing: false, bgFx: true, progressBar: true, backToTop: true },
   },
   {
     id: "minimal",
     name: "Minimal",
     description: "Clean, typographic and quiet. Lets your work speak.",
-    defaults: { mode: "light", primary: "#111827", accent: "#2563eb", font: "inter", headingFont: "inter", radius: "sm" },
+    defaults: { mode: "light", primary: "#111827", accent: "#2563eb", font: "inter", headingFont: "inter", radius: "sm", animations: true, animation: "fade", animSpeed: "slow", hoverEffects: true, typing: false, bgFx: false, progressBar: true, backToTop: true },
   },
   {
     id: "developer",
     name: "Developer",
     description: "Terminal-inspired, monospace accents, dark by default.",
-    defaults: { mode: "dark", primary: "#22c55e", accent: "#38bdf8", font: "inter", headingFont: "jetbrains", radius: "md" },
+    defaults: { mode: "dark", primary: "#22c55e", accent: "#38bdf8", font: "inter", headingFont: "jetbrains", radius: "md", animations: true, animation: "slide-side", animSpeed: "fast", hoverEffects: true, typing: true, bgFx: false, progressBar: true, backToTop: true },
   },
   {
     id: "creative",
     name: "Creative",
     description: "Big type, playful color blocks, made for designers.",
-    defaults: { mode: "light", primary: "#f97316", accent: "#0ea5e9", font: "outfit", headingFont: "space-grotesk", radius: "xl" },
+    defaults: { mode: "light", primary: "#f97316", accent: "#0ea5e9", font: "outfit", headingFont: "space-grotesk", radius: "xl", animations: true, animation: "zoom", animSpeed: "normal", hoverEffects: true, typing: false, bgFx: true, progressBar: true, backToTop: true },
   },
   {
     id: "classic",
     name: "Classic",
     description: "Elegant serif, résumé-style sidebar layout.",
-    defaults: { mode: "light", primary: "#0d7377", accent: "#b45309", font: "lora", headingFont: "playfair", radius: "sm" },
+    defaults: { mode: "light", primary: "#0d7377", accent: "#b45309", font: "lora", headingFont: "playfair", radius: "sm", animations: true, animation: "fade", animSpeed: "normal", hoverEffects: true, typing: false, bgFx: false, progressBar: false, backToTop: true },
   },
   {
     id: "glass",
     name: "Glass",
     description: "Dark glassmorphism with glowing gradients.",
-    defaults: { mode: "dark", primary: "#8b5cf6", accent: "#06b6d4", font: "outfit", headingFont: "outfit", radius: "xl" },
+    defaults: { mode: "dark", primary: "#8b5cf6", accent: "#06b6d4", font: "outfit", headingFont: "outfit", radius: "xl", animations: true, animation: "blur", animSpeed: "normal", hoverEffects: true, typing: true, bgFx: true, progressBar: true, backToTop: true },
   },
 ];
 
@@ -70,6 +70,37 @@ export const COLOR_PRESETS: { name: string; primary: string; accent: string }[] 
   { name: "Neon", primary: "#22c55e", accent: "#38bdf8" },
   { name: "Rose", primary: "#be185d", accent: "#7c3aed" },
 ];
+
+export const ANIMATIONS: { id: AnimationStyle; label: string; hint: string }[] = [
+  { id: "none", label: "None", hint: "No motion" },
+  { id: "fade", label: "Fade", hint: "Soft fade in" },
+  { id: "slide-up", label: "Slide up", hint: "Rise into place" },
+  { id: "slide-side", label: "Slide in", hint: "From the sides" },
+  { id: "zoom", label: "Zoom", hint: "Scale up" },
+  { id: "blur", label: "Blur", hint: "Focus in" },
+  { id: "flip", label: "Flip", hint: "3D tilt in" },
+];
+
+export const ANIM_SPEEDS: Record<AnimationSpeed, { label: string; dur: string; stagger: string }> = {
+  slow: { label: "Slow", dur: "1.1s", stagger: "0.14s" },
+  normal: { label: "Normal", dur: "0.75s", stagger: "0.09s" },
+  fast: { label: "Fast", dur: "0.45s", stagger: "0.05s" },
+};
+
+/** Animation fields of a template's defaults (used by "Reset to template defaults"). */
+export function templateAnimDefaults(id: TemplateId): Partial<Design> {
+  const d = TEMPLATES.find((t) => t.id === id)?.defaults ?? {};
+  const keys = ["animations", "animation", "animSpeed", "hoverEffects", "typing", "bgFx", "progressBar", "backToTop"] as const;
+  return Object.fromEntries(keys.filter((k) => k in d).map((k) => [k, d[k]])) as Partial<Design>;
+}
+
+/** Normalise designs saved before the animation system existed. */
+export function withAnimDefaults(d: Design): Design {
+  const base = templateAnimDefaults(d.template);
+  const merged = { ...base, ...Object.fromEntries(Object.entries(d).filter(([, v]) => v !== undefined)) } as Design;
+  if (d.animations === false && !d.animation) merged.animation = "none";
+  return merged;
+}
 
 export const RADIUS: Record<Design["radius"], string> = {
   none: "0px",
@@ -112,6 +143,8 @@ export function themeVars(d: Design): Record<string, string> {
     "--r": RADIUS[d.radius],
     "--font": FONTS[d.font].css,
     "--hfont": FONTS[d.headingFont].css,
+    "--rv-d": ANIM_SPEEDS[d.animSpeed ?? "normal"]?.dur ?? "0.75s",
+    "--rv-stagger": ANIM_SPEEDS[d.animSpeed ?? "normal"]?.stagger ?? "0.09s",
   };
 }
 
@@ -155,6 +188,13 @@ export function emptyPortfolio(userId: string, username: string, name: string, e
       headingFont: "poppins",
       radius: "lg",
       animations: true,
+      animation: "slide-up",
+      animSpeed: "normal",
+      hoverEffects: true,
+      typing: false,
+      bgFx: true,
+      progressBar: true,
+      backToTop: true,
       ...t.defaults,
     },
     seo: { title: "", description: "" },

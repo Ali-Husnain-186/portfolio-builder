@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, Nav, ProjectImage, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, Nav, ProjectImage, ProjectLinks, SkillBar, SocialIcons, label, visibleSections, type TplProps, Typed } from "./shared";
 
 export default function Modern({ p, preview }: TplProps) {
   const pr = p.profile;
@@ -97,7 +97,7 @@ export default function Modern({ p, preview }: TplProps) {
               Hi, I&apos;m <span style={{ background: "linear-gradient(90deg,var(--p),var(--a))", WebkitBackgroundClip: "text", color: "transparent" }}>{pr.fullName}</span>
             </h1>
             {pr.title && <p className="mt-4 text-xl font-medium">{pr.title}</p>}
-            {pr.tagline && <p className="mt-3 max-w-xl text-lg" style={{ color: "var(--muted)" }}>{pr.tagline}</p>}
+            {pr.tagline && <p className="mt-3 max-w-xl text-lg" style={{ color: "var(--muted)" }}><Typed text={pr.tagline} /></p>}
             <div className="mt-8 flex flex-wrap gap-3">
               <a href="#projects" className="px-6 py-3 font-semibold text-white shadow-lg transition hover:-translate-y-0.5" style={{ background: "linear-gradient(90deg,var(--p),var(--a))", borderRadius: "var(--r)" }}>View my work</a>
               {pr.resumeUrl && <a href={pr.resumeUrl} target="_blank" rel="noopener noreferrer" className="px-6 py-3 font-semibold" style={{ border: "1px solid var(--border)", borderRadius: "var(--r)", background: "var(--card)" }}>Download CV</a>}

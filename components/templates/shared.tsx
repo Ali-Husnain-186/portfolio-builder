@@ -1,11 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
-import type { Portfolio, SectionKey, Socials } from "@/lib/types";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import type { Design, Portfolio, SectionKey, Socials } from "@/lib/types";
 import { SECTION_LABELS } from "@/lib/types";
 
 export type TplProps = { p: Portfolio; preview?: boolean };
+
+/** Live animation settings for the portfolio being rendered (null = static, e.g. thumbnails). */
+export const AnimCtx = createContext<Design | null>(null);
+
+/** Tagline text; types itself out when the "typing" effect is on. */
+export function Typed({ text }: { text: string }) {
+  const d = useContext(AnimCtx);
+  const on = !!d && d.typing && d.animation !== "none";
+  const [n, setN] = useState(on ? 0 : text.length);
+  useEffect(() => {
+    if (!on) { setN(text.length); return; }
+    setN(0);
+    const speed = d?.animSpeed === "fast" ? 22 : d?.animSpeed === "slow" ? 60 : 38;
+    let i = 0;
+    const start = setTimeout(function tick() {
+      i++;
+      setN(i);
+      if (i < text.length) timer = setTimeout(tick, speed);
+    }, 450);
+    let timer: ReturnType<typeof setTimeout> = start;
+    return () => clearTimeout(timer);
+  }, [text, on, d?.animSpeed]);
+  if (!on) return <>{text}</>;
+  return (
+    <span aria-label={text}>
+      <span aria-hidden>{text.slice(0, n)}</span>
+      <span aria-hidden className="fl-type-caret">|</span>
+    </span>
+  );
+}
 
 export const initials = (name: string) =>
   name

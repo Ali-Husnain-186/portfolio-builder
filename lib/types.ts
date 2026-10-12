@@ -70,6 +70,9 @@ export type FontId =
   | "lora"
   | "jetbrains";
 
+export type AnimationStyle = "none" | "fade" | "slide-up" | "slide-side" | "zoom" | "blur" | "flip";
+export type AnimationSpeed = "slow" | "normal" | "fast";
+
 export type Design = {
   template: TemplateId;
   mode: "light" | "dark";
@@ -79,7 +82,15 @@ export type Design = {
   font: FontId;
   headingFont: FontId;
   radius: "none" | "sm" | "md" | "lg" | "xl";
+  /** legacy master switch — false behaves like animation "none" */
   animations: boolean;
+  animation: AnimationStyle;
+  animSpeed: AnimationSpeed;
+  hoverEffects: boolean;
+  typing: boolean;
+  bgFx: boolean;
+  progressBar: boolean;
+  backToTop: boolean;
 };
 
 export type Portfolio = {

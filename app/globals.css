@@ -44,15 +44,74 @@ body {
 .card { @apply rounded-2xl border border-ui-line bg-white; }
 }
 
-/* portfolio animations */
-@keyframes flUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-@keyframes flGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* animation picker swatches in the editor */
+@keyframes demoFade { 0%,20% { opacity: 0; } 60%,100% { opacity: 1; } }
+@keyframes demoUp { 0%,20% { opacity: 0; transform: translateY(12px); } 60%,100% { opacity: 1; transform: none; } }
+@keyframes demoSide { 0%,20% { opacity: 0; transform: translateX(-18px); } 60%,100% { opacity: 1; transform: none; } }
+@keyframes demoZoom { 0%,20% { opacity: 0; transform: scale(.6); } 60%,100% { opacity: 1; transform: none; } }
+@keyframes demoBlur { 0%,20% { opacity: 0; filter: blur(6px); } 60%,100% { opacity: 1; filter: none; } }
+@keyframes demoFlip { 0%,20% { opacity: 0; transform: perspective(200px) rotateX(-60deg); } 60%,100% { opacity: 1; transform: none; } }
+.fl-demo { background: linear-gradient(120deg, var(--ui-brand), var(--ui-brand2)); }
+.fl-demo-none { background: var(--ui-line); }
+.group:hover .fl-demo-fade, [aria-pressed=true] .fl-demo-fade { animation: demoFade 1.6s ease infinite; }
+.group:hover .fl-demo-slide-up, [aria-pressed=true] .fl-demo-slide-up { animation: demoUp 1.6s ease infinite; }
+.group:hover .fl-demo-slide-side, [aria-pressed=true] .fl-demo-slide-side { animation: demoSide 1.6s ease infinite; }
+.group:hover .fl-demo-zoom, [aria-pressed=true] .fl-demo-zoom { animation: demoZoom 1.6s ease infinite; }
+.group:hover .fl-demo-blur, [aria-pressed=true] .fl-demo-blur { animation: demoBlur 1.6s ease infinite; }
+.group:hover .fl-demo-flip, [aria-pressed=true] .fl-demo-flip { animation: demoFlip 1.6s ease infinite; }
+
+/* ---------- portfolio motion system ---------- */
 @keyframes flMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes flBlink { 50% { opacity: 0; } }
-.fl-anim .fl-reveal { animation: flUp .8s cubic-bezier(.2,.7,.2,1) both; }
-.fl-anim .fl-grow { transform-origin: left; animation: flGrow 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes flFloatA { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(8vw,6vh) scale(1.15); } 66% { transform: translate(-4vw,10vh) scale(.9); } }
+@keyframes flFloatB { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-10vw,-8vh) scale(1.2); } }
+@keyframes flFloatC { 0%,100% { transform: translate(0,0) scale(1.1); } 50% { transform: translate(6vw,-10vh) scale(.85); } }
+
 .fl-marquee { animation: flMarquee 30s linear infinite; }
-.fl-caret { animation: flBlink 1s steps(1) infinite; }
+.fl-caret, .fl-type-caret { animation: flBlink 1s steps(1) infinite; }
+.fl-type-caret { margin-left: 1px; font-weight: 300; color: var(--p); }
+
+/* scroll reveal — hidden state only applies once JS has tagged the element */
+.fl-js [data-rv] {
+  opacity: 0;
+  transition: opacity var(--rv-d) ease, transform var(--rv-d) cubic-bezier(.2,.7,.2,1), filter var(--rv-d) ease;
+  transition-delay: calc(var(--i, 0) * var(--rv-stagger));
+  will-change: opacity, transform;
+}
+.fl-js.fl-a-slide-up [data-rv] { transform: translateY(42px); }
+.fl-js.fl-a-slide-side [data-rv="0"] { transform: translateX(-56px); }
+.fl-js.fl-a-slide-side [data-rv="1"] { transform: translateX(56px); }
+.fl-js.fl-a-zoom [data-rv] { transform: scale(.86); }
+.fl-js.fl-a-blur [data-rv] { filter: blur(14px); transform: translateY(14px) scale(.98); }
+.fl-js.fl-a-flip [data-rv] { transform: perspective(900px) rotateX(-28deg) translateY(20px); transform-origin: 50% 0; }
+.fl-js [data-rv].fl-in { opacity: 1; transform: none; filter: none; }
+.fl-js [data-rv].fl-done { transition: revert-layer; will-change: auto; }
+
+/* skill bars grow when revealed */
+.fl-js .fl-grow { transform: scaleX(0); transform-origin: left; transition: transform calc(var(--rv-d) * 1.6) cubic-bezier(.2,.7,.2,1) .15s; }
+.fl-js .fl-in .fl-grow, .fl-js .fl-grow.fl-in { transform: scaleX(1); }
+
+/* hover effects switch */
+.fl-nohover *:hover { transform: none !important; box-shadow: none !important; }
+.fl-hover a, .fl-hover button { transition-property: transform, opacity, background-color, color, box-shadow; }
+
+/* animated background glows */
+.fl-bgfx { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; mix-blend-mode: multiply; opacity: .2; }
+.fl-bgfx-dark { mix-blend-mode: screen; opacity: .3; }
+.fl-bgfx span { position: absolute; width: 42vmax; height: 42vmax; border-radius: 9999px; filter: blur(90px); }
+.fl-bgfx span:nth-child(1) { background: var(--p); top: -12vmax; left: -10vmax; animation: flFloatA 22s ease-in-out infinite; }
+.fl-bgfx span:nth-child(2) { background: var(--a); top: 30%; right: -14vmax; animation: flFloatB 26s ease-in-out infinite; }
+.fl-bgfx span:nth-child(3) { background: color-mix(in srgb, var(--p) 50%, var(--a)); bottom: -16vmax; left: 30%; animation: flFloatC 30s ease-in-out infinite; }
+
+/* scroll progress + back to top */
+.fl-progress { position: fixed; top: 0; left: 0; height: 3px; z-index: 60; background: linear-gradient(90deg, var(--p), var(--a)); transition: width .1s linear; }
+.fl-totop { position: fixed; right: 20px; bottom: 76px; z-index: 55; width: 44px; height: 44px; border-radius: 9999px; color: #fff; font-size: 18px; font-weight: 700;
+  background: linear-gradient(135deg, var(--p), var(--a)); box-shadow: 0 10px 30px -10px var(--p); opacity: 0; transform: translateY(16px); pointer-events: none; transition: opacity .3s, transform .3s; cursor: pointer; }
+.fl-totop-show { opacity: 1; transform: none; pointer-events: auto; }
+.fl-totop:hover { transform: translateY(-3px); }
+
 @media (prefers-reduced-motion: reduce) {
-  .fl-anim .fl-reveal, .fl-anim .fl-grow, .fl-marquee, .fl-caret { animation: none; }
+  .fl-js [data-rv] { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .fl-js .fl-grow { transform: none; transition: none; }
+  .fl-marquee, .fl-caret, .fl-type-caret, .fl-bgfx span { animation: none; }
 }

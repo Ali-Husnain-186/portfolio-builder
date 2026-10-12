@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, Nav, ProjectLinks, SocialIcons, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, Nav, ProjectLinks, SocialIcons, visibleSections, type TplProps, Typed } from "./shared";
 
 export default function Developer({ p, preview }: TplProps) {
   const pr = p.profile;
@@ -65,7 +65,7 @@ export default function Developer({ p, preview }: TplProps) {
               <h1 className="mt-2 text-4xl font-bold md:text-6xl">{pr.fullName}</h1>
               <p className="mt-4" style={muted}><span style={{ color: "var(--p)" }}>$</span> cat role.txt</p>
               <p className="mt-1 text-xl" style={{ color: "var(--a)" }}>{pr.title}</p>
-              {pr.tagline && <><p className="mt-4" style={muted}><span style={{ color: "var(--p)" }}>$</span> cat mission.md</p><p className="mt-1 font-sans text-lg">{pr.tagline}</p></>}
+              {pr.tagline && <><p className="mt-4" style={muted}><span style={{ color: "var(--p)" }}>$</span> cat mission.md</p><p className="mt-1 font-sans text-lg"><Typed text={pr.tagline} /></p></>}
               <p className="mt-4"><span style={{ color: "var(--p)" }}>$</span> <span className="fl-caret">_</span></p>
               <div className="mt-6 flex flex-wrap items-center gap-4">
                 <SocialIcons socials={p.socials} />

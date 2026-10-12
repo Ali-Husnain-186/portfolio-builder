@@ -1,7 +1,7 @@
 "use client";
 
 import type { SectionKey } from "@/lib/types";
-import { Avatar, ContactForm, Footer, ProjectImage, ProjectLinks, SocialIcons, label, visibleSections, type TplProps } from "./shared";
+import { Avatar, ContactForm, Footer, ProjectImage, ProjectLinks, SocialIcons, label, visibleSections, type TplProps, Typed } from "./shared";
 
 export default function Creative({ p, preview }: TplProps) {
   const pr = p.profile;
@@ -70,7 +70,7 @@ export default function Creative({ p, preview }: TplProps) {
           <div className="mb-3 rotate-3"><Avatar p={p} size={150} /></div>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-[2fr_1fr]">
-          <p className="text-2xl md:text-3xl" style={H}>{pr.tagline || pr.title}</p>
+          <p className="text-2xl md:text-3xl" style={H}><Typed text={pr.tagline || pr.title} /></p>
           <div className="space-y-2 text-sm md:text-right" style={muted}>
             <p className="text-base font-semibold" style={{ color: "var(--fg)" }}>{pr.title}</p>
             {pr.location && <p>{pr.location}</p>}

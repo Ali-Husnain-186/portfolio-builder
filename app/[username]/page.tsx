@@ -42,7 +42,7 @@ export default async function PublicPortfolio({ params }: { params: Promise<{ us
   return (
     <>
       {isOwner && (
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-ui-line bg-white px-2 py-1.5 text-sm shadow-lg">
+        <div className="fixed bottom-4 left-4 z-[70] flex items-center gap-2 rounded-full border border-ui-line bg-white px-2 py-1.5 text-sm shadow-lg">
           {!p.published && <span className="px-2 text-amber-700">Hidden — only you can see this</span>}
           <Link href="/dashboard/editor" className="btn-primary !rounded-full !py-1.5">✏️ Edit</Link>
         </div>
